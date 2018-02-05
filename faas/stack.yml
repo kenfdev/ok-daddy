@@ -1,0 +1,14 @@
+provider:
+  name: faas
+  gateway: http://localhost:8080
+
+functions:
+  line-gw:
+    lang: go-wg
+    handler: ./line-gw
+    image: kenfdev/where-is-daddy:line-gw-0.1
+    secrets:
+      - line-secrets
+    environment:
+      CHANNEL_SECRET_KEY_NAME: channelSecret
+      CHANNEL_ACCESS_TOKEN_KEY_NAME: channelAccessToken

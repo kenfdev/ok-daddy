@@ -1,0 +1,20 @@
+{
+	"ImportPath": "github.com/kenfdev/where-is-daddy/faas/line-gw",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/line/line-bot-sdk-go/linebot",
+			"Comment": "1.0.0-91-gd571964",
+			"Rev": "d5719649979e73fbf3551b3f277fd6d8f85c887b"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "d866cfc389cec985d6fda2859936a575a55a3ab6"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "d866cfc389cec985d6fda2859936a575a55a3ab6"
+		}
+	]
+}
