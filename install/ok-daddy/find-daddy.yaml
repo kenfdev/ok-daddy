@@ -1,0 +1,67 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: find-daddy
+  namespace: ok-daddy
+spec:
+  selector:
+    app: find-daddy
+  type:  ClusterIP
+  ports:
+  - name: find-daddy
+    port: 80
+    targetPort: 8000
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: find-daddy
+  namespace: ok-daddy
+  labels:
+    app: find-daddy
+spec:
+  # strategy:
+  #   rollingUpdate:
+  #     maxSurge: 1
+  #     maxUnavailable: 1
+  #   type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: find-daddy
+    spec:
+      containers:
+      - image: kenfdev/ok-daddy:find-daddy-0.1
+        name: find-daddy
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "55M"
+        # livenessProbe:
+        #   httpGet:
+        #     path: /_status/healthz
+        #     port: 5000
+        #   initialDelaySeconds: 90
+        #   timeoutSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /_status/healthz
+        #     port: 5000
+        #   initialDelaySeconds: 30
+        #   timeoutSeconds: 10
+        env:
+        - name: CHECKIN_URL
+          value: "http://gateway.openfaas.svc.cluster.local:8080/function/fs-fetch-checkin"
+        ports:
+        - containerPort: 8000
+          name:  find-daddy
+      #   volumeMounts:
+      #   - mountPath: /data
+      #     name: data
+      # volumes:
+      #   - name: data
+      #     emptyDir: {}
+      restartPolicy: Always

@@ -1,14 +1,51 @@
 provider:
   name: faas
-  gateway: http://localhost:8080
+  gateway: http://localhost:31112
 
 functions:
   line-gw:
     lang: go-wg
     handler: ./line-gw
-    image: kenfdev/where-is-daddy:line-gw-0.1
+    image: kenfdev/ok-daddy:line-gw-0.1
     secrets:
       - line-secrets
     environment:
+      write_debug: true
+      BROKER_URL: http://gateway.openfaas.svc.cluster.local:8080/function/df-broker
       CHANNEL_SECRET_KEY_NAME: channelSecret
       CHANNEL_ACCESS_TOKEN_KEY_NAME: channelAccessToken
+  df-broker:
+    lang: node
+    handler: ./df-broker
+    image: kenfdev/ok-daddy:df-broker-0.1
+    secrets:
+      - df-secrets
+    environment:
+      write_debug: true
+      DF_CLIENT_ACCESS_TOKEN_KEY_NAME: accessToken
+  df-webhook:
+    lang: go
+    handler: ./df-webhook
+    image: kenfdev/ok-daddy:df-webhook-0.1
+    environment:
+      FIND_DADDY_URL: http://find-daddy.ok-daddy.svc.cluster.local/api/find-daddy
+      SEND_MESSAGE_URL: http://slack-bot.ok-daddy.svc.cluster.local/api/message
+    #   write_debug: true
+  fs-fetch-checkin:
+    lang: go
+    handler: ./fs-fetch-checkin
+    image: kenfdev/ok-daddy:fs-fetch-checkin-0.1
+    secrets:
+      - fs-secrets
+    environment:
+      write_debug: true
+      FS_URL: https://api.foursquare.com/v2/users/self/checkins
+      FS_API_VER: "20170801"
+      OAUTH_TOKEN_KEY_NAME: oauthToken
+  google-home-notifier:
+    lang: node-with-python
+    handler: ./google-home-notifier
+    image: kenfdev/ok-daddy:google-home-notifier-0.1
+    environment:
+      AVAHI_COMPAT_NOWARN: "1"
+      GOOGLEHOME_IP: "192.168.100.6"

@@ -1,0 +1,73 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: slack-bot
+  namespace: ok-daddy
+spec:
+  selector:
+    app: slack-bot
+  type: ClusterIP
+  ports:
+  - name: slack-bot
+    port: 80
+    targetPort: 8080
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: ok-daddy
+  name: slack-bot
+  labels:
+    app: slack-bot
+spec:
+  # strategy:
+  #   rollingUpdate:
+  #     maxSurge: 1
+  #     maxUnavailable: 1
+  #   type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: slack-bot
+    spec:
+      containers:
+      - image: kenfdev/ok-daddy:slack-bot-0.1
+        name: slack-bot
+        imagePullPolicy: Always
+        env:
+        - name: DADDYHOME_OAUTH_TOKEN_KEY_NAME
+          value: "daddyHomeOAuthToken"
+        - name: CHANNEL_ID
+          value: "C994KQKG9"
+        - name: GOOGLEHOME_URL
+          value: "http://gateway.openfaas.svc.cluster.local:8080/function/google-home-notifier"
+        # resources:
+        #   requests:
+        #     cpu: "20m"
+        #     memory: "55M"
+        # livenessProbe:
+        #   httpGet:
+        #     path: /_status/healthz
+        #     port: 5000
+        #   initialDelaySeconds: 90
+        #   timeoutSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /_status/healthz
+        #     port: 5000
+        #   initialDelaySeconds: 30
+        #   timeoutSeconds: 10
+        ports:
+        - containerPort: 8080
+          name: slack-bot
+        volumeMounts:
+        - mountPath: /run/secrets
+          readOnly: true
+          name: daddy-home-oauth-token
+      volumes:
+        - name: daddy-home-oauth-token
+          secret:
+            secretName: slack-secrets
+      restartPolicy: Always

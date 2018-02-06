@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: openfaas-ingress
+  namespace: openfaas
+  labels:
+    app: caddy
+spec:
+  rules:
+  - host: f0aa879e.ngrok.io
+    http:
+      paths:
+      - path: /function/line-gw
+        backend:
+          serviceName: gateway
+          servicePort: 8080
+      - path: /
+        backend:
+          serviceName: caddy
+          servicePort: 80

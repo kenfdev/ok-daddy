@@ -1,0 +1,97 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: caddy-config
+  namespace: openfaas
+  labels:
+    app: caddy
+data:
+  Caddyfile: |
+    :80 {
+        status 200 /healthz
+        basicauth /system {$ADMIN_USER} {$ADMIN_PASSWORD}
+        basicauth /function {$ADMIN_USER} {$ADMIN_PASSWORD}
+        basicauth /ui {$ADMIN_USER} {$ADMIN_PASSWORD}
+        proxy / gateway:8080 {
+                transparent
+            }
+
+        errors stderr
+        tls off
+    }
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: caddy
+  namespace: openfaas
+  labels:
+    app: caddy
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      name: web
+      nodePort: 30049
+  selector:
+    app: caddy
+
+---
+
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: caddy
+  namespace: openfaas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caddy
+  template:
+    metadata:
+      labels:
+        app: caddy
+    spec:
+      containers:
+      - name: caddy
+        image: abiosoft/caddy:0.10.10
+        imagePullPolicy: Always
+        command: ["caddy", "--conf", "/Caddyfile"]
+        env:
+        - name: ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: gateway-basic-auth
+              key: user
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gateway-basic-auth
+              key: password
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        resources:
+          limits:
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /Caddyfile
+          name: caddy-config
+          subPath: Caddyfile
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: caddy-config
+            items:
+              - key: Caddyfile
+                path: Caddyfile
+                mode: 0644

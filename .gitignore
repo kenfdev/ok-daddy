@@ -1,6 +1,12 @@
 secrets.yaml
+node_modules/
+*.log
+kube_config_cluster.yml
 
 # Created by https://www.gitignore.io/api/go,macos,visualstudiocode
+### Vagrant ###
+.vagrant/
+*.box
 
 ### Go ###
 # Binaries for programs and plugins
